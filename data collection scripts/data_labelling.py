@@ -1,4 +1,8 @@
-import pygame
+#TO DO:
+#Setup file initialization, np.save() x2
+
+
+#import pygame
 from mss import mss
 import cv2
 import time
@@ -9,34 +13,94 @@ import numpy as np
 from grabscreen import grab_screen
 from skimage.color import rgb2gray
 import matplotlib.pyplot as plt
+import xinput
 
-def start():
-    dim = {'top':0,'left':40,'width':800,'height':640}
+def start(starting_value):
+    file_name = 'video-training_data-{}.npy'.format(starting_value)
+    
     avg_fps = []
     time1 = time.time()
     bool_val = True
     i = 0
+    paused = False
+    #xinput.sample_first_joystick()
+    data_array = []
     #while i < 100:
-    while i < 1:
-        gta_screen = grab_screen(region=(0,40,799,639))
-        gray = rgb2gray(gta_screen)
-        cv2.imshow('test',gray)
-        #time2 = time.time()
-        #delta = time2 - time1
-        #time1 = time2
-        #avg_fps.append(1/delta)
+    #timearray = []
+    counter = 0
+    while True:
+        if counter == 25:
+            print("done recording")
+            break
+        if not paused:
+            gta_screen = grab_screen(region=(0,0,799,639))
+            gray = rgb2gray(gta_screen)
+            #cv2.imshow('test',gray)
+            
+            #j.dispatch_events()
+            #time2 = time.time()
+            #delta = time2 - time1
+            #time1 = time2
+            #timearray.append(time.time())
+            #print(1/delta)
+            #avg_fps.append(1/delta)
+
+            data_array.append([time.time(),gray])
+            if cv2.waitKey(25) & 0xFF == ord('q'):
+                cv2.destroyAllWindows()
+                break
+            if len(data_array) == 40:
+                np.save(file_name,np.array(data_array))
+                print('ALL DONE SAVED')
+                counter = counter +1
+                data_array = []
+                starting_value += 1
+                file_name = 'video-training_data-{}.npy'.format(starting_value)
+        if is_pressed('p'):
+            if paused:
+                paused = False
+                print('unpaused!')
+                time.sleep(1)
+            else:
+                print('Pausing!')
+                paused = True
+                time.sleep(1)
+    """
+    for i in data_array:
+        print(i[0])
+        cv2.imshow('test',i[1])
         if cv2.waitKey(25) & 0xFF == ord('q'):
             cv2.destroyAllWindows()
             break
-        i += 1
-    print(np.shape(np.array(gray)))    
-    #avg_val = sum(avg_fps)/len(avg_fps)
-    #print("average value for grab_screen: ", avg_val)
-
-
-start()
-
+        while True:
+            if is_pressed('p'):
+                break
+        time.sleep(1)
     """
+    
+    #print(len(gray))
+    #print(np.shape(np.array(gray)))    
+    #avg_val = sum(avg_fps)/len(avg_fps)
+    #print(timearray)
+    #print("average value for grab_screen: ", avg_val)
+    
+if __name__ == "__main__":
+    starting_value = 0
+    while True:
+        if is_pressed('p'):
+            break
+    while True:
+        file_name = 'video-training_data-{}.npy'.format(starting_value)
+
+        if os.path.isfile(file_name):
+            print('File exists, moving along',starting_value)
+            starting_value += 1
+        else:
+            print('File does not exist, starting fresh!',starting_value)
+            break
+    start(starting_value)
+
+"""
     sct = mss()
     time1 = time.time()
     print("sct")
@@ -64,68 +128,6 @@ start()
     """
 
 """
-boolval = True
-
-
-pygame.init()
-
-screen = pygame.display.set_mode((500, 700))
-
-
-pygame.display.set_caption("My Game")
-
-done = False
-
-# Used to manage how fast the screen updates.
-clock = pygame.time.Clock()
-
-# Initialize the joysticks.
-pygame.joystick.init()
-
-# Get ready to print.
-textPrint = TextPrint()
-
-starting_value = 1
-
-
-
-while boolval:
-    if is_pressed('p'):
-        print("finished")
-        boolval = False
-        
-
-
-# Define some colors.
-BLACK = pygame.Color('black')
-WHITE = pygame.Color('white')
-
-
-# This is a simple class that will help us print to the screen.
-# It has nothing to do with the joysticks, just outputting the
-# information.
-class TextPrint(object):
-    def __init__(self):
-        self.reset()
-        self.font = pygame.font.Font(None, 20)
-
-    def tprint(self, screen, textString):
-        textBitmap = self.font.render(textString, True, BLACK)
-        screen.blit(textBitmap, (self.x, self.y))
-        self.y += self.line_height
-
-    def reset(self):
-        self.x = 10
-        self.y = 10
-        self.line_height = 15
-
-    def indent(self):
-        self.x += 10
-
-    def unindent(self):
-        self.x -= 10
-
-
 pygame.init()
 
 # Set the width and height of the screen (width, height).
