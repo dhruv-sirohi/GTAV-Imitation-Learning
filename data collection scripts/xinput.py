@@ -215,10 +215,10 @@ class XInputJoystick(event.EventDispatcher):
         if not state:
             raise RuntimeError(
                 "Joystick %d is not connected" % self.device_number)
-        if state.packet_number != self._last_state.packet_number:
+        #if state.packet_number != self._last_state.packet_number:
             # state has changed, handle the change
-            self.update_packet_count(state)
-            self.handle_changed_state(state)
+        self.update_packet_count(state)
+        self.handle_changed_state(state)
         self._last_state = state
 
     def update_packet_count(self, state):
@@ -253,9 +253,9 @@ class XInputJoystick(event.EventDispatcher):
             # ags, 2014-07-01
             #if ((old_val != new_val and (new_val > 0.08000000000000000 or new_val < -0.08000000000000000) and abs(old_val - new_val) > 0.00000000500000000) or
             #   (axis == 'right_trigger' or axis == 'left_trigger') and new_val == 0 and abs(old_val - new_val) > 0.00000000500000000):
-            input_vector.append(['axis', axis, new_val])
+            input_vector.append(new_val)
             self.dispatch_event('on_axis', axis, new_val)
-        print("action")
+        #print("action")
         self.dispatch_event('update_array', input_vector)       
             
 
@@ -350,9 +350,11 @@ def clear_array():
     arr = []
     return arr
 
-def sample_first_joystick(data_arr,starting_value):
+def sample_first_joystick(data_arr,starting_value,time_start):
     file_name = 'controller-training_data-{}.npy'.format(starting_value)
     counter = 0
+    #time_end = time_start + 60*60*2
+    time_end = time_start + 20 #60*60
     """
     Grab 1st available gamepad, logging changes to the screen.
     L & R analogue triggers set the vibration motor speed.
@@ -394,42 +396,49 @@ def sample_first_joystick(data_arr,starting_value):
 
     @j.event
     def update_array(input_vector):
-        data_arr.append([time.time(),input_vector])
-        print(len(data_arr))
-        if len(data_arr) == 5:
-            np.save(file_name,np.array(data_arr))
+        data_arr.append([round(time.time(),2),input_vector])
+        #print(round(time.time(),2))
+        #print(len(data_arr))
+        if time.time() > time_end:
+            np.save(file=file_name,arr=data_arr,allow_pickle = True)
             print('ALL DONE SAVED')
             #data_arr = clear_array()
 
 
-    time1 = time.time()
-    i = 0
-    avgfps = []
-    timearray = []
+    #time1 = time.time()
+    #i = 0
+    #avgfps = []
+    #timearray = []
     #while True:
-    while i < 50:
-        if len(data_arr) == 5:
+    while True:
+        if time.time() > time_end + 0.05:
+            print("done!")
+            print("fps: ", len(data_arr)/20)
+            #time_end += 60*60*2
             data_arr = clear_array()
             starting_value += 1
             file_name = 'controller-training_data-{}.npy'.format(starting_value)
-        time2 = time.time()
+            break
+        #time2 = time.time()
         #print("fps: ", 1/(time2-time1))
-        avgfps.append(time2-time1)
-        time1=time2
+        #avgfps.append(time2-time1)
+        #time1=time2
         j.dispatch_events()
-        timearray.append(time2)
-        time.sleep(.07)
-        i += 1
-    avgval = sum(avgfps)/len(avgfps)
+        #timearray.append(time2)
+        time.sleep(.005)
+        # i += 1
+    #avgval = sum(avgfps)/len(avgfps)
     #print(timearray)
-    print("avg: ", 1/avgval)
-    print(len(data_arr))
-    print(data_arr)
+    #print("avg: ", 1/avgval)
+    #print(len(data_arr))
+    #print(data_arr)
 if __name__ == "__main__":
     starting_value = 0
+    print("press q to start")
     while True:
-        if is_pressed('p'):
+        if is_pressed('q'):
             break
+    print("started")
     while True:
         file_name = 'controller-training_data-{}.npy'.format(starting_value)
 
@@ -448,6 +457,7 @@ if __name__ == "__main__":
     """
     #time1 = time.time()
     data_arr = []
-    sample_first_joystick(data_arr, starting_value)
+    time_start = time.time()
+    sample_first_joystick(data_arr,starting_value,time_start)
     
     # determine_optimal_sample_rate()
