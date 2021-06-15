@@ -1,5 +1,8 @@
 import os
 import numpy as np
+from skimage.color import rgb2gray
+import cv2
+import time
 
 starting_value = 0
 controller_file_name = 'controller-training_data-{}.npy'.format(starting_value)
@@ -32,44 +35,66 @@ if os.path.isfile(controller_file_name):
             video_data = np.load(video_file_name,allow_pickle=True)
             #want to find range of controller values (by time) to average over
             processed_data = []
+            prev_control_vals = []
             controller_index_mark = 0
             for video_entry in video_data:
+                """
                 ltrig_vals_to_be_averaged = []
                 rtrig_vals_to_be_averaged = []
                 lthumbx_vals_to_be_averaged = []
                 lthumby_vals_to_be_averaged = []
                 rthumbx_vals_to_be_averaged = []
                 rthumby_vals_to_be_averaged = []
-                
+                """
+                control_vals_to_be_averaged = []
                 time_value = video_entry[0]
                 i = controller_index_mark
-
-                while controller_timestamps[i] <= time_value:
-                    ltrig_vals_to_be_averaged.append(control_data[i][0])
-                    rtrig_vals_to_be_averaged.append(control_data[i][1])
-                    lthumbx_vals_to_be_averaged.append(control_data[i][2])
-                    lthumby_vals_to_be_averaged.append(control_data[i][3])
-                    rthumbx_vals_to_be_averaged.append(control_data[i][4])
-                    rthumby_vals_to_be_averaged.append(control_data[i][5])
-                    i+=1
-                controller_index_mark = i
-                ltrig_mean = np.mean(ltrig_vals_to_be_averaged,1)
-                rtrig_mean = np.mean(rtrig_vals_to_be_averaged,1)
-                lthumbx_mean = np.mean(lthumbx_vals_to_be_averaged,2)
-                lthumby_mean = np.mean(lthumby_vals_to_be_averaged,2)
-                rthumbx_mean = np.mean(rthumbx_vals_to_be_averaged,2)
-                rthumby_mean = np.mean(rthumby_vals_to_be_averaged,2)
-                average_control_vector = [ltrig_mean,rtrig_mean,lthumbx_mean,lthumby_mean,rthumbx_mean,rthumby_mean]
-                processed_data.append([average_control_vector,video_entry[1]])
+                if i < len(controller_timestamps):                
+                    while controller_timestamps[i] <= time_value:
+                        control_vals_to_be_averaged.append(control_data[i])
+                        i+=1
+                        if i == len(controller_timestamps):
+                            break
+                    controller_index_mark = i
+                    mean_control_vals = []
+                    if len(control_vals_to_be_averaged) > 0:
+                        mean_control_vals = list(np.mean(control_vals_to_be_averaged,0))
+                        #print(mean_control_vals)
+                        for index in range(0,len(mean_control_vals)):
+                            dec_places = 1
+                            translation_value = 0
+                            if index > 1:
+                                dec_places = 2
+                                translation_value = 0.5
+                            mean_control_vals[index] = round(mean_control_vals[index],dec_places) + translation_value
+                        prev_control_vals = mean_control_vals
+                    else:
+                        mean_control_vals = prev_control_vals
+                    processed_data.append([mean_control_vals,video_entry[1]])
+                else:
+                    break
             processed_data_file_name = 'processed-training_data-{}.npy'.format(starting_value)
-            #grayscale here
-            np.save(file=file_name,arr=np.array(data_arr),allow_pickle = True)
+            #print(len(processed_data))
+            #print(len(video_data))
+            np.save(file=processed_data_file_name,arr=np.array(processed_data),allow_pickle = True)
 
+            for i in processed_data:
+                #acc just differentiate between diff sticks
+                """
+                if i[0][2] > 0.2 or i[0][3] > 0.2:
+                    print("left")
+                if i[0][4] > 0.2 or i[0][5] > 0.2:
+                    print("right")
+                #print(i[0][2])
+                #print(i[0][3])
+                cv2.imshow("baseball", i[1])
+                if cv2.waitKey(25) & 0xFF == ord('q'):
+                    cv2.destroyAllWindows()
+                    break
+                """
+                    
             
-            starting_value += 1
-
-
-            
+            starting_value += 1  
         else:
             break
     
