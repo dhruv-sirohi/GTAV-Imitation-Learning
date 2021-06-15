@@ -353,8 +353,8 @@ def clear_array():
 def sample_first_joystick(data_arr,starting_value,time_start):
     file_name = 'controller-training_data-{}.npy'.format(starting_value)
     counter = 0
-    time_end = time_start + 60*60*2
-    #time_end = time_start + 60*60
+    #time_end = time_start + 60*60*2
+    time_end = time_start + 20
     """
     Grab 1st available gamepad, logging changes to the screen.
     L & R analogue triggers set the vibration motor speed.
@@ -386,7 +386,7 @@ def sample_first_joystick(data_arr,starting_value,time_start):
         left_speed = 0
         right_speed = 0
 
-        print('axis', axis, value)
+        #print('axis', axis, value)
         #data_arr.append([time.time()])
         if axis == "left_trigger":
             left_speed = value
@@ -427,7 +427,7 @@ def sample_first_joystick(data_arr,starting_value,time_start):
         j.dispatch_events()
         #timearray.append(time2)
         time.sleep(.005)
-        h += 1
+        #h += 1
         
         # i += 1
     #avgval = sum(avgfps)/len(avgfps)

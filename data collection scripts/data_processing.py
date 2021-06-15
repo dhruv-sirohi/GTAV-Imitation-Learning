@@ -21,8 +21,9 @@ if os.path.isfile(controller_file_name):
     controller_timestamps = []
     control_data = []
     for entry in unprocessed_data:
-        controller_timestamps.append(entry[0])    
-        control_data.append(entry[1])
+        controller_timestamps.append(entry[0])
+        control_data.append(entry[1][:3])
+        #print(entry[1][:3])
         #control_data.append(unprocessed_data[1][1])
         #print(controller_timestamps)
         #print(control_data)
@@ -68,6 +69,7 @@ if os.path.isfile(controller_file_name):
                                 translation_value = 0.5
                             mean_control_vals[index] = round(mean_control_vals[index],dec_places) + translation_value
                         prev_control_vals = mean_control_vals
+                        print(prev_control_vals)
                     else:
                         mean_control_vals = prev_control_vals
                     processed_data.append([mean_control_vals,video_entry[1]])
