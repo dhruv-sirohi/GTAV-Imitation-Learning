@@ -25,12 +25,15 @@ def start(starting_value,time_start):
     data_array = []
     counter = 0
     while True:
-        if counter == 25:
+        if counter == 450:
             print("done recording")
             break
         if not paused:
-            screen = grab_screen(region=(0,0,799,599))
-            screen = cv2.resize(screen, (80,60))
+            screen = grab_screen(region=(0,0,1270,720))
+            
+            #plt.imshow(screen)
+            #plt.show()
+            screen = cv2.resize(screen, (160,120))
             
             #gray_screen = rgb2gray(screen)
             
@@ -40,8 +43,9 @@ def start(starting_value,time_start):
             if cv2.waitKey(25) & 0xFF == ord('q'):
                 cv2.destroyAllWindows()
                 break
+            break
             """
-            if len(data_array) == 500*5:
+            if len(data_array) == 500:
                 time_start = time.time()
                 np.save(file_name,data_array)#,allow_pickle = True)
                 print(time.time()-time_start)#> time_end:
@@ -60,7 +64,7 @@ def start(starting_value,time_start):
                 paused = True
                 time.sleep(1)
 if __name__ == "__main__":
-    starting_value = 0
+    starting_value = 65
     print("press q to start")
     while True:
         if is_pressed('q'):
@@ -74,5 +78,6 @@ if __name__ == "__main__":
         else:
             print('File does not exist, starting fresh!',starting_value)
             break
+    time.sleep(10)
     time_start = time.time()
     start(starting_value,time_start)
