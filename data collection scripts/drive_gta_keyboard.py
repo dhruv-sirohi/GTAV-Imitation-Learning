@@ -2,42 +2,68 @@ from pynput.keyboard import Key, Controller
 import time
 import cv2
 import os
-from alexnet import alexnet
+#from alexnet import alexnet
 import matplotlib.pyplot as plt
 from grabscreen import grab_screen
 import tensorflow as tf
 from skimage.color import rgb2gray
 import numpy as np
 from keyboard import is_pressed  # using module keyboard
-
-
-WIDTH = 160
-HEIGHT = 120
+from directkeys import PressKey,ReleaseKey, W, A, S, D
+import vgamepad as vg
 
 keyboard = Controller()
+WIDTH = 160
+HEIGHT = 120
+LR = 1e-3
+EPOCHS = 10
+#MODEL_NAME = 'pygta5-car-fast-{}-{}-{}-epochs-300K-data.model'.format(LR, 'alexnetv2',EPOCHS)
 
+#model = alexnet(WIDTH, HEIGHT, LR)
+#model.load(MODEL_NAME)
+import vgamepad as vg
+gamepad = vg.VX360Gamepad()
+gamepad.update()
 
 def straight():
-    keyboard.press('w')
+    print("straight")
+    PressKey(W)
+    ReleaseKey(A)
+    ReleaseKey(D)
+    """
     keyboard.release('a')
     keyboard.release('d')
     #keyboard.release('s')
+    """
+    #time.sleep(10)
     
 def left():
-    keyboard.press('a')
-    keyboard.press('w')
+    print("left")
+    PressKey(A)
+    PressKey(W)
+    ReleaseKey(D)
+    #keyboard.press('a')
+    #keyboard.press('w')
     #keyboard.release('a')
-    keyboard.release('d')
+    #keyboard.release('d')
     #keyboard.release('s')
-    time.sleep(0.09)
+    #time.sleep(0.03)
+    #time.sleep(10)
     
 def right():
+    print("right")
+    PressKey(D)
+    ReleaseKey(A)
+    PressKey(W)
+    """
     keyboard.press('d')
     keyboard.press('w')
     keyboard.release('a')
     #keyboard.release('d')
     #keyboard.release('s')
-    time.sleep(0.09)
+    """
+    #time.sleep(0.03)
+    #time.sleep(10)
 
 #model = alexnet()
 #model.load("gta_sentdex_model_epoch_30.h5")
@@ -59,24 +85,85 @@ def main():
                 paused = False
             else:
                 print("paused")
+                ReleaseKey(W)
+                ReleaseKey(A)
+                ReleaseKey(D)
+                time.sleep(1)
                 paused = True
         if not paused:
+            time_start = time.time()
+            """
+            screen = grab_screen(region=(0,25,800,625))
+            screen = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
+            screen = cv2.resize(screen, (160,120))
+
+            prediction = model.predict([screen.reshape(160,120,1)])[0]
+            print(prediction)
+            """
             #screen = grab_screen(region=(0,0,1366,768))
             screen = grab_screen(region=(0,25,800,625))
+            screen = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
             screen = cv2.resize(screen, (160,120))
-            gray_tensor = tf.convert_to_tensor(rgb2gray(screen))
-            input_data_shape = [1] + list(gray_tensor.shape) + [1]
-            gray_tensor_reshaped = tf.reshape(gray_tensor,input_data_shape)
+            #print(screen.shape)
+            prediction = model.predict([screen.reshape(1,120,160,1)])[0]
+            
+            """
+            screen = grab_screen(region=(0,25,800,625))
+            
+            screen = cv2.resize(screen, (160,120))
+            screen = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
+            #plt.imshow(screen)
+            #plt.show()
+
+
+            #gray_tensor = np.array(screen)
+            #print(gray_tensor.shape)
+            #rgb2gray(screen))
+            #tf.convert_to_tensor(rgb2gray(screen))
+            input_data_shape = [1] + list(screen.shape) + [1]
+            gray_tensor_reshaped = screen.reshape(input_data_shape)
             prediction = model.predict(gray_tensor_reshaped)[0]
+            """
             print(prediction)
-            turn_confidence = 0.75
-            straight_confidence = 0.7
+
+            gamepad.right_trigger_float(value_float=float(prediction[1]/1.1))  # value between 0.0 and 1.0
+            """
+            if (prediction[2] > 0.6):
+                gamepad.left_joystick_float(x_value_float=float(prediction[2]/1.1-prediction[0]/1.25), y_value_float=0.0)  # values between -1.0 and 1.0
+            elif (prediction[0] > 0.6):
+                gamepad.left_joystick_float(x_value_float=float(prediction[2]/1.25-prediction[0]/1.1), y_value_float=0.0)  # values between -1.0 and 1.0
+            else:
+            """
+            x_val = float((prediction[2] - prediction[0])/1.2)
+            gamepad.left_joystick_float(x_value_float=x_val, y_value_float=0.0)  # values between -1.0 and 1.0
+            gamepad.update()
+
+            """
+            gamepad.left_trigger_float(value_float=0.5)  # value between 0.0 and 1.0
+            gamepad.right_trigger_float(value_float=1.0)  # value between 0.0 and 1.0
+            gamepad.left_joystick_float(x_value_float=-0.5, y_value_float=0.0)  # values between -1.0 and 1.0
+            gamepad.right_joystick_float(x_value_float=-1.0, y_value_float=0.8)  # values between -1.0 and 1.0
+
+            gamepad.update()
+
+            """
+            """
+            turn_confidence = 0.65
+            straight_confidence = 0.65
+            
             if prediction[0] > turn_confidence:
                 left()
-            elif prediction[1] > turn_confidence:
+            elif prediction[1] > straight_confidence:
                 straight()
             elif prediction[2] > turn_confidence:
                 right()
+            else:
+                print("no action")
+                ReleaseKey(W)
+                ReleaseKey(A)
+                ReleaseKey(D)
+            """
+            print("loop took: {}".format(time.time()-time_start))
             #break
             #print(model.summary)
                 
