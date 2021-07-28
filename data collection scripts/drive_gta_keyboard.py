@@ -3,10 +3,12 @@ import time
 import cv2
 import os
 #from alexnet import alexnet
+from models import build_resnet_model
 import matplotlib.pyplot as plt
 from grabscreen import grab_screen
 import tensorflow as tf
-from skimage.color import rgb2gray
+from tensorflow import keras
+#from skimage.color import rgb2gray
 import numpy as np
 from keyboard import is_pressed  # using module keyboard
 from directkeys import PressKey,ReleaseKey, W, A, S, D
@@ -67,10 +69,22 @@ def right():
 
 #model = alexnet()
 #model.load("gta_sentdex_model_epoch_30.h5")
-model = tf.keras.models.load_model("gta_sentdex_model_epoch_30.h5")
+
+model = build_resnet_model()
+lr_schedule = keras.optimizers.schedules.ExponentialDecay(
+  initial_learning_rate=1.5e-2,
+  decay_steps=10000,
+  decay_rate=0.95)
+#optimizer = keras.optimizers.SGD(learning_rate=lr_schedule)
+#model = tf.keras.models.load_model("gta_sentdex_model_epoch_30.h5")
+#model.compile(loss='mse', optimizer=optimizer, metrics=[linear_regression_equality])
+#file_name = "resnet_model_epoch_{}.ckpt".format(225)
+file_name = "partly_blurry_resnet_model_epoch_195.ckpt"
+model.load_weights(file_name).expect_partial()
+
 
 def main():
-    print("bike should be in 3rd person view!")
+    print("bike should be in 1st person view!")
     print("starting in 5 seconds")
     for i in range(4,-1,-1):
         print(i)
@@ -101,12 +115,17 @@ def main():
             print(prediction)
             """
             #screen = grab_screen(region=(0,0,1366,768))
+            
             screen = grab_screen(region=(0,25,800,625))
-            screen = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
+            #screen = grab_screen(region=(0,0,1270,720))
+
+            #screen = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
+            #screen = cv2.resize(screen, (160,120))
             screen = cv2.resize(screen, (160,120))
             #print(screen.shape)
-            prediction = model.predict([screen.reshape(1,120,160,1)])[0]
-            
+            #h+=1
+            prediction = model.predict([screen.reshape(1,120,160,3)])[0][0]
+            prediction_adjusted = prediction - 0.5
             """
             screen = grab_screen(region=(0,25,800,625))
             
@@ -124,9 +143,9 @@ def main():
             gray_tensor_reshaped = screen.reshape(input_data_shape)
             prediction = model.predict(gray_tensor_reshaped)[0]
             """
-            print(prediction)
+            print(prediction_adjusted)
 
-            gamepad.right_trigger_float(value_float=float(prediction[1]/1.1))  # value between 0.0 and 1.0
+            gamepad.right_trigger_float(value_float=float(0.5))#prediction[1]/1.1))  # value between 0.0 and 1.0
             """
             if (prediction[2] > 0.6):
                 gamepad.left_joystick_float(x_value_float=float(prediction[2]/1.1-prediction[0]/1.25), y_value_float=0.0)  # values between -1.0 and 1.0
@@ -134,7 +153,8 @@ def main():
                 gamepad.left_joystick_float(x_value_float=float(prediction[2]/1.25-prediction[0]/1.1), y_value_float=0.0)  # values between -1.0 and 1.0
             else:
             """
-            x_val = float((prediction[2] - prediction[0])/1.2)
+            #x_val = float((prediction[2] - prediction[0])/1.2)
+            x_val = float(prediction_adjusted)*2
             gamepad.left_joystick_float(x_value_float=x_val, y_value_float=0.0)  # values between -1.0 and 1.0
             gamepad.update()
 
@@ -169,6 +189,17 @@ def main():
                 
 
 if __name__ == "__main__":
+    print("started")
+    """
+    screen = grab_screen(region=(0,0,1270,720))
+    screen1 = cv2.resize(screen, (160,120))
+    screen1 = cv2.resize(screen1, (100,100))
+    plt.imshow(screen1)
+    plt.show()
+    screen1 = cv2.resize(screen, (100,100))
+    plt.imshow(screen1)
+    plt.show()
+    """
     main()
     
 
