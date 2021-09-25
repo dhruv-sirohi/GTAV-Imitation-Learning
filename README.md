@@ -11,7 +11,7 @@ While a neural net can acheive passable performance on the classification task w
 
 The neural network consists of a [ResNet50](https://cv-tricks.com/keras/understand-implement-resnets/ 'ResNet50') trained on the ImageNet dataset (with its last 4 layers chopped off), 4 dense layers, and a single output layer. Dropout was initially used, but was removed due to [poor performance on regression tasks](https://towardsdatascience.com/pitfalls-with-dropout-and-batchnorm-in-regression-problems-39e02ce08e4d/ 'poor performance on regression tasks').
 
-The Sentdex_GTAV training script was used to train an Alexnet using Sentdex's training data (https://github.com/Sentdex/pygta5). This was used an inital test. 
+The Sentdex_GTAV training script was used to train an Alexnet using [Sentdex's training data](https://github.com/Sentdex/pygta5 "Sentdex's training data"). This was used an inital test. 
 
 ## Data Collection + Processing
 
