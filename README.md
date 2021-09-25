@@ -47,7 +47,7 @@ After 105 epochs of training, test accuracy plateaued at ~80%, with training acc
 
 <p align="center">
 
-<img src="https://github.com/dhruv-sirohi/GTAV-Imitation-Learning/blob/main/training_scripts/plots/Epoch105_accuracy.png"/>
+<img src="https://github.com/dhruv-sirohi/GTAV-Imitation-Learning/blob/main/training_scripts/plots/Epoch105_accuracy_plot.png"/>
 
   </p> 
   
