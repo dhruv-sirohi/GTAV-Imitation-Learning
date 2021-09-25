@@ -1,6 +1,6 @@
 # Autonomous Driving in GTA V using Imitation Learning
 
-Using imitation learning to teach an agent to drive vehicles in GTA V, with the hopes of potentially applying the trained agent to real-world control tasks. 
+Using imitation learning to teach an agent to drive vehicles in GTA V, with the hopes of eventually applying the trained agent to real-world control tasks. 
 
 
 ## Algorithm Overview
