@@ -30,7 +30,7 @@ This dataset was then balanced, as it did not evenly represent all parts of the 
   </p> 
 
 <div align="center"> 
-Breakdown of the unbalanced dataset
+Breakdown of part of the unbalanced dataset
   <div align="left">  
     
 <br />  
